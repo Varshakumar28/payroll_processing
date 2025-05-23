@@ -1,0 +1,42 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+env/
+venv/
+ENV/
+.venv/
+
+# macOS files
+.DS_Store
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Editor directories and files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+
+# MS Access DB backups
+*.ldb
+*.bak
+*.tmp
+
+# Ignore Microsoft Access database only if sensitive
+# database/*.accdb
+
+# Python environment files
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# System files
+Thumbs.db
