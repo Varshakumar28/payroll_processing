@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Payroll – Timesheet App</title>
+
+    <!-- Bootstrap 4.6 & SB Admin 2 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css"
+        rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.4/css/sb-admin-2.min.css" rel="stylesheet" />
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <!-- Toastr -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+</head>
+
+<body id="page-top">
+    <div id="wrapper">
+        <!-- Sidebar -->
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="timesheets.html">
+                <div class="sidebar-brand-icon"><i class="fas fa-clock"></i></div>
+                <div class="sidebar-brand-text mx-3">Timesheet</div>
+            </a>
+            <hr class="sidebar-divider my-0">
+            <li class="nav-item">
+                <a class="nav-link" href="dashboard.html">
+                    <i class="fas fa-fw fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="timesheets.html">
+                    <i class="fas fa-fw fa-table"></i>
+                    <span>Timesheets</span>
+                </a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="payroll.html">
+                    <i class="fas fa-fw fa-dollar-sign"></i>
+                    <span>Payroll</span>
+                </a>
+            </li>
+            <hr class="sidebar-divider d-none d-md-block">
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+        </ul>
+        <!-- End Sidebar -->
+
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                        <i class="fa fa-bars"></i>
+                    </button>
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <button id="logoutBtn" class="btn btn-sm btn-danger">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+
+                <div class="container-fluid">
+                    <h1 class="h3 mb-2 text-gray-800">Payroll History</h1>
+                    <div class="card shadow mb-4">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="payrollTable" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Approved Hours</th>
+                                            <th>Overtime Hours</th>
+                                            <th>Gross Salary</th>
+                                            <th>Net Pay</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.4/js/sb-admin-2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <script>
+        const API_URL = 'http://localhost:8001';
+
+        $.ajaxPrefilter((options, _, xhr) => {
+            const tk = localStorage.getItem('access_token');
+            if (tk) xhr.setRequestHeader('Authorization', 'Bearer ' + tk);
+        });
+
+        function fmtDMY(s) {
+            const [y, m, d] = s.split('-');
+            return `${d}-${m}-${y}`;
+        }
+
+        $(function () {
+            if (!localStorage.getItem('access_token')) {
+                window.location.href = 'login.html';
+                return;
+            }
+            $('#logoutBtn').click(() => {
+                localStorage.removeItem('access_token');
+                window.location.href = 'login.html';
+            });
+
+            $.getJSON(`${API_URL}/payrolls`)
+                .done(data => {
+                    const tbody = $('#payrollTable tbody').empty();
+                    data.forEach(r => {
+                        const tr = $('<tr>');
+                        tr.append(`<td>${fmtDMY(r.payroll_date)}</td>`);
+                        tr.append(`<td>${r.approved_hours}</td>`);
+                        tr.append(`<td>${r.overtime_hours}</td>`);
+                        tr.append(`<td>${r.gross_salary.toFixed(2)}</td>`);
+                        tr.append(`<td>${r.net_pay.toFixed(2)}</td>`);
+                        tbody.append(tr);
+                    });
+                })
+                .fail(() => toastr.error('Failed to load payrolls'));
+        });
+    </script>
+</body>
+
+</html>

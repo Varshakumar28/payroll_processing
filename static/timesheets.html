@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Timesheets – Timesheet App</title>
+
+  <!-- Bootstrap 4.6 & SB Admin 2 CSS -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link
+    href="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.4/css/sb-admin-2.min.css"
+    rel="stylesheet"
+  />
+  <!-- FontAwesome -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    rel="stylesheet"
+  />
+  <!-- Toastr -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"
+    rel="stylesheet"
+  />
+</head>
+
+<body id="page-top">
+  <div id="wrapper">
+    <!-- Sidebar -->
+    <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+      <a class="sidebar-brand d-flex align-items-center justify-content-center" href="timesheets.html">
+        <div class="sidebar-brand-icon"><i class="fas fa-clock"></i></div>
+        <div class="sidebar-brand-text mx-3">Timesheet</div>
+      </a>
+      <hr class="sidebar-divider my-0">
+      <li class="nav-item">
+        <a class="nav-link" href="dashboard.html">
+            <i class="fas fa-fw fa-home"></i>
+            <span>Dashboard</span>
+        </a>
+    </li>
+      <li class="nav-item active">
+        <a class="nav-link" href="timesheets.html">
+          <i class="fas fa-fw fa-table"></i>
+          <span>Timesheets</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="payroll.html">
+          <i class="fas fa-fw fa-dollar-sign"></i>
+          <span>Payroll</span>
+        </a>
+      </li>
+      <hr class="sidebar-divider d-none d-md-block">
+      <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+      </div>
+    </ul>
+    <!-- End of Sidebar -->
+
+    <div id="content-wrapper" class="d-flex flex-column">
+      <div id="content">
+        <!-- Topbar -->
+        <nav
+          class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+          <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+            <i class="fa fa-bars"></i>
+          </button>
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <button id="logoutBtn" class="btn btn-sm btn-danger">
+                <i class="fas fa-sign-out-alt"></i> Logout
+              </button>
+            </li>
+          </ul>
+        </nav>
+        <!-- End of Topbar -->
+
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+          <h1 class="h3 mb-2 text-gray-800">Your Timesheets</h1>
+
+          <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+              <h6 class="m-0 font-weight-bold text-primary">Timesheet Entries</h6>
+              <button id="showCreateForm" class="btn btn-success btn-sm">
+                <i class="fas fa-plus"></i> New Entry
+              </button>
+            </div>
+            <div class="card-body">
+              <!-- Create / Edit Form -->
+              <div id="tsFormCard" class="card mb-4" style="display:none;">
+                <div class="card-body">
+                  <form id="tsForm" class="user">
+                    <input type="hidden" id="ts_id" />
+                    <div class="form-group">
+                      <label>Date Worked</label>
+                      <input type="date" id="date_worked" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                      <label>Hours Worked (max 8)</label>
+                      <input type="number" id="hours_worked" step="0.1" max="8" min="0"
+                        class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                      <label>Overtime Hours</label>
+                      <input type="number" id="overtime_hours" step="0.1" min="0"
+                        class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                      <label>Description</label>
+                      <textarea id="work_description" rows="2"
+                        class="form-control" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-user btn-block">
+                      Save
+                    </button>
+                    <button type="button" id="cancelTs" class="btn btn-secondary btn-user btn-block">
+                      Cancel
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Table -->
+              <div class="table-responsive">
+                <table class="table table-bordered" id="tsTable" width="100%" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Hours</th>
+                      <th>OT</th>
+                      <th>Status</th>
+                      <th>Manager Comments</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /.container-fluid -->
+      </div>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.bundle.min.js"
+  ></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.4/js/sb-admin-2.min.js"
+  ></script>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"
+  ></script>
+
+  <script>
+    const API_URL = 'http://localhost:8001';
+
+    // Attach JWT header automatically
+    $.ajaxPrefilter(function (options, _, xhr) {
+      const token = localStorage.getItem('access_token');
+      if (token) xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    });
+
+    // Format YYYY-MM-DD → DD-MM-YYYY
+    function fmtDMY(s) {
+      const [y, m, d] = s.split('-');
+      return `${d}-${m}-${y}`;
+    }
+
+    $(function () {
+      if (!localStorage.getItem('access_token')) {
+        return void (window.location.href = 'login.html');
+      }
+      $('#logoutBtn').click(() => {
+        localStorage.removeItem('access_token');
+        window.location.href = 'login.html';
+      });
+
+      // Load table
+      function loadTimesheets() {
+        $.getJSON(`${API_URL}/timesheets`)
+          .done(data => {
+            const tbody = $('#tsTable tbody').empty();
+            data.forEach(ts => {
+              const tr = $('<tr>');
+              tr.append(`<td>${fmtDMY(ts.date_worked)}</td>`);
+              tr.append(`<td>${ts.hours_worked}</td>`);
+              tr.append(`<td>${ts.overtime_hours}</td>`);
+              tr.append(`<td>${ts.submission_status}</td>`);
+              tr.append(`<td>${ts.manager_comments||''}</td>`);
+              let acts = '';
+              if (ts.submission_status === 'Pending') {
+                acts = `
+                  <button class="btn btn-sm btn-primary editBtn" data-id="${ts.timesheet_id}">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn btn-sm btn-danger delBtn" data-id="${ts.timesheet_id}">
+                    <i class="fas fa-trash"></i>
+                  </button>`;
+              }
+              tr.append(`<td>${acts}</td>`);
+              tbody.append(tr);
+            });
+          })
+          .fail(() => toastr.error('Failed to load timesheets'));
+      }
+      loadTimesheets();
+
+      $('#showCreateForm').click(() => {
+        $('#tsFormCard').show();
+        $('#ts_id, #date_worked, #hours_worked, #overtime_hours, #work_description').val('');
+      });
+      $('#cancelTs').click(() => $('#tsFormCard').hide());
+
+      $('#tsForm').submit(function (e) {
+        e.preventDefault();
+        const id = $('#ts_id').val();
+        const pay = {
+          date_worked: $('#date_worked').val(),
+          hours_worked: parseFloat($('#hours_worked').val()),
+          overtime_hours: parseFloat($('#overtime_hours').val()),
+          work_description: $('#work_description').val()
+        };
+        $.ajax({
+          url: `${API_URL}/timesheets${id?'/'+id:''}`,
+          method: id?'PUT':'POST',
+          contentType: 'application/json',
+          data: JSON.stringify(pay)
+        })
+          .done(() => {
+            toastr.success(id?'Updated':'Created');
+            $('#tsFormCard').hide();
+            loadTimesheets();
+          })
+          .fail(xhr => toastr.error(xhr.responseJSON?.detail || 'Error'));
+      });
+
+      $('#tsTable').on('click', '.editBtn', function () {
+        const id = $(this).data('id');
+        $.getJSON(`${API_URL}/timesheets`)
+          .done(data => {
+            const ts = data.find(x => x.timesheet_id == id);
+            if (ts) {
+              $('#ts_id').val(ts.timesheet_id);
+              $('#date_worked').val(ts.date_worked);
+              $('#hours_worked').val(ts.hours_worked);
+              $('#overtime_hours').val(ts.overtime_hours);
+              $('#work_description').val(ts.work_description);
+              $('#tsFormCard').show();
+            }
+          });
+      });
+
+      $('#tsTable').on('click', '.delBtn', function () {
+        const id = $(this).data('id');
+        if (!confirm('Delete this entry?')) return;
+        $.ajax({
+          url: `${API_URL}/timesheets/${id}`,
+          method: 'DELETE'
+        })
+          .done(() => {
+            toastr.success('Deleted');
+            loadTimesheets();
+          })
+          .fail(() => toastr.error('Delete failed'));
+      });
+    });
+  </script>
+</body>
+
+</html>

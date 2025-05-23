@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Deductions – Manager</title>
+    <!-- CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css"
+        rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.4/css/sb-admin-2.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+</head>
+
+<body id="page-top">
+    <div id="wrapper">
+        <!-- Sidebar -->
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="manager_dashboard.html">
+                <div class="sidebar-brand-icon"><i class="fas fa-tachometer-alt"></i></div>
+                <div class="sidebar-brand-text mx-3">Manager</div>
+            </a>
+            <hr class="sidebar-divider my-0" />
+            <li class="nav-item"><a class="nav-link" href="manager_dashboard.html"><i
+                        class="fas fa-home"></i><span>Dashboard</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="employees.html"><i
+                        class="fas fa-users"></i><span>Employees</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="timesheets_all.html"><i class="fas fa-table"></i><span>All
+                        Timesheets</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="payrates.html"><i
+                        class="fas fa-clock"></i><span>Payrates</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="payrolls_all.html"><i
+                        class="fas fa-dollar-sign"></i><span>Payroll Runs</span></a></li>
+            <li class="nav-item active"><a class="nav-link" href="deductions.html"><i
+                        class="fas fa-file-invoice-dollar"></i><span>Deductions</span></a></li>
+            <hr class="sidebar-divider d-none d-md-block" />
+            <div class="text-center d-none d-md-inline"><button class="rounded-circle border-0"
+                    id="sidebarToggle"></button></div>
+        </ul>
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 shadow">
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3"><i
+                            class="fa fa-bars"></i></button>
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <button id="logoutBtn" class="btn btn-sm btn-danger">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+
+                <!-- Page Content -->
+                <div class="container-fluid">
+                    <h1 class="h3 mb-4 text-gray-800">Deductions</h1>
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                            <span class="font-weight-bold text-primary">Manage Deductions</span>
+                            <button id="showDedForm" class="btn btn-success btn-sm">
+                                <i class="fas fa-plus"></i> New Deduction
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="dedTable" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            <th>Payroll</th>
+                                            <th>Type</th>
+                                            <th>Amount</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deduction Modal -->
+                <div class="modal fade" id="dedModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Deduction</h5>
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" id="ded_id" />
+                                <div class="form-group">
+                                    <label>Payroll Run</label>
+                                    <select id="ded_payroll" class="form-control"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Deduction Type</label>
+                                    <input type="text" id="ded_type" class="form-control" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Amount</label>
+                                    <input type="number" step="0.01" id="ded_amount" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button id="dedSaveBtn" class="btn btn-primary">Save</button>
+                                <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.4/js/sb-admin-2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <script>
+        const API_URL = 'http://localhost:8001';
+        let empData = [], payData = [], dedData = [];
+        // guard + JWT
+        $.ajaxPrefilter((opts, _, xhr) => {
+            const tk = localStorage.getItem('access_token');
+            if (!tk) return window.location.href = 'login.html';
+            xhr.setRequestHeader('Authorization', 'Bearer ' + tk);
+        });
+
+        $(function () {
+            $('#logoutBtn').click(() => {
+                localStorage.removeItem('access_token');
+                window.location.href = 'login.html';
+            });
+
+            // parse ?payroll=ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const filterPid = urlParams.get('payroll');
+
+            function fmtDMY(s) {
+                const [y, m, d] = s.split('-');
+                return `${d}-${m}-${y}`;
+            }
+
+            // load employees + payrolls
+            $.when(
+                $.getJSON(`${API_URL}/employees`).done(d => empData = d),
+                $.getJSON(`${API_URL}/payrolls/all`).done(d => payData = d)
+            ).then(loadDeductions);
+
+            function loadDeductions() {
+                // populate dropdown
+                const sel = $('#ded_payroll').empty();
+                payData
+                    .filter(p => !filterPid || p.payroll_id == filterPid)
+                    .forEach(r => {
+                        const e = empData.find(x => x.employee_id === r.employee_id);
+                        const label = e
+                            ? `${e.first_name} ${e.last_name} – ${fmtDMY(r.payroll_date)}`
+                            : `#${r.payroll_id}`;
+                        sel.append(`<option value="${r.payroll_id}">${label}</option>`);
+                    });
+
+                // fetch list
+                const qp = filterPid ? `?payroll_id=${filterPid}` : '';
+                $.getJSON(`${API_URL}/deductions${qp}`)
+                    .done(data => {
+                        dedData = data;
+                        const tbody = $('#dedTable tbody').empty();
+                        data.forEach(d => {
+                            const pr = payData.find(p => p.payroll_id === d.payroll_id);
+                            const e = pr && empData.find(x => x.employee_id === pr.employee_id);
+                            const prLabel = pr
+                                ? `${e.first_name} ${e.last_name} – ${fmtDMY(pr.payroll_date)}`
+                                : `#${d.payroll_id}`;
+                            tbody.append(`
+                <tr>
+                  <td>${prLabel}</td>
+                  <td>${d.deduction_type}</td>
+                  <td>${d.amount.toFixed(2)}</td>
+                  <td>
+                    <button class="btn btn-sm btn-primary editBtn" data-id="${d.deduction_id}">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger delBtn" data-id="${d.deduction_id}">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              `);
+                        });
+                    })
+                    .fail(() => toastr.error('Failed to load deductions'));
+            }
+
+            // New
+            $('#showDedForm').click(() => {
+                $('#ded_id, #ded_type, #ded_amount').val('');
+                $('#dedModal').modal('show');
+            });
+
+            // Edit
+            $('#dedTable').on('click', '.editBtn', function () {
+                const id = $(this).data('id');
+                const d = dedData.find(x => x.deduction_id === id);
+                $('#ded_id').val(d.deduction_id);
+                $('#ded_payroll').val(d.payroll_id);
+                $('#ded_type').val(d.deduction_type);
+                $('#ded_amount').val(d.amount);
+                $('#dedModal').modal('show');
+            });
+
+            // Save
+            $('#dedSaveBtn').click(() => {
+                const id = $('#ded_id').val();
+                const payload = {
+                    payroll_id: +$('#ded_payroll').val(),
+                    deduction_type: $('#ded_type').val(),
+                    amount: +$('#ded_amount').val()
+                };
+                const method = id ? 'PUT' : 'POST';
+                const url = id
+                    ? `${API_URL}/deductions/${id}`
+                    : `${API_URL}/deductions`;
+                $.ajax({ url, method, contentType: 'application/json', data: JSON.stringify(payload) })
+                    .done(() => {
+                        toastr.success(id ? 'Updated' : 'Created');
+                        $('#dedModal').modal('hide');
+                        loadDeductions();
+                    })
+                    .fail(xhr => toastr.error(xhr.responseJSON?.detail || 'Operation failed'));
+            });
+
+            // Delete
+            $('#dedTable').on('click', '.delBtn', function () {
+                const id = $(this).data('id');
+                if (!confirm('Delete this deduction?')) return;
+                $.ajax({ url: `${API_URL}/deductions/${id}`, method: 'DELETE' })
+                    .done(() => {
+                        toastr.success('Deleted');
+                        loadDeductions();
+                    })
+                    .fail(() => toastr.error('Delete failed'));
+            });
+        });
+    </script>
+</body>
+
+</html>

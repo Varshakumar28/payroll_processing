@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Employees – Manager</title>
+    <!-- CSS deps -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css"
+        rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.4/css/sb-admin-2.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+</head>
+
+<body id="page-top">
+    <div id="wrapper">
+        <!-- Sidebar -->
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="manager_dashboard.html">
+                <div class="sidebar-brand-icon"><i class="fas fa-tachometer-alt"></i></div>
+                <div class="sidebar-brand-text mx-3">Manager</div>
+            </a>
+            <hr class="sidebar-divider my-0" />
+            <li class="nav-item"><a class="nav-link" href="manager_dashboard.html"><i
+                        class="fas fa-home"></i><span>Dashboard</span></a></li>
+            <li class="nav-item active"><a class="nav-link" href="employees.html"><i
+                        class="fas fa-users"></i><span>Employees</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="timesheets_all.html"><i class="fas fa-table"></i><span>All
+                        Timesheets</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="payrates.html"><i
+                        class="fas fa-clock"></i><span>Payrates</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="payrolls_all.html"><i
+                        class="fas fa-dollar-sign"></i><span>Payroll Runs</span></a></li>
+            <li class="nav-item">
+                <a class="nav-link" href="deductions.html">
+                    <i class="fas fa-file-invoice-dollar"></i><span>Deductions</span>
+                </a>
+            </li>
+            <hr class="sidebar-divider d-none d-md-block" />
+            <div class="text-center d-none d-md-inline"><button class="rounded-circle border-0"
+                    id="sidebarToggle"></button></div>
+        </ul>
+        <!-- Content -->
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 shadow">
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3"><i
+                            class="fa fa-bars"></i></button>
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <button id="logoutBtn" class="btn btn-sm btn-danger">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+                <!-- Page Content -->
+                <div class="container-fluid">
+                    <h1 class="h3 mb-4 text-gray-800">Employees</h1>
+                    <div class="card shadow mb-4">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="empTable" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Phone</th>
+                                            <th>Dept</th>
+                                            <th>Role</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="empModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Employee</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="emp_id" />
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="text" id="emp_phone" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>Department</label>
+                        <input type="text" id="emp_dept" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="empSaveBtn" class="btn btn-primary">Save</button>
+                    <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS deps -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.4/js/sb-admin-2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <script>
+        const API_URL = 'http://localhost:8001';
+        let empData = [];
+
+        // Attach JWT & guard
+        $.ajaxPrefilter((opts, _, xhr) => {
+            const tk = localStorage.getItem('access_token');
+            if (!tk) location.href = 'login.html';
+            xhr.setRequestHeader('Authorization', 'Bearer ' + tk);
+        });
+
+        $(function () {
+            $('#logoutBtn').click(() => {
+                localStorage.removeItem('access_token');
+                location.href = 'login.html';
+            });
+
+            function loadEmployees() {
+                $.getJSON(`${API_URL}/employees`)
+                    .done(data => {
+                        empData = data;
+                        const tbody = $('#empTable tbody').empty();
+                        data.forEach(e => {
+                            tbody.append(`
+                <tr>
+                  <td>${e.first_name} ${e.last_name}</td>
+                  <td>${e.email}</td>
+                  <td>${e.phone}</td>
+                  <td>${e.department}</td>
+                  <td>${e.role}</td>
+                  <td>
+                    <button class="btn btn-sm btn-primary editBtn" data-id="${e.employee_id}">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                  </td>
+                </tr>
+              `);
+                        });
+                    })
+                    .fail(() => toastr.error('Failed to load employees'));
+            }
+            loadEmployees();
+
+            // Show modal
+            $('#empTable').on('click', '.editBtn', function () {
+                const id = $(this).data('id');
+                const e = empData.find(x => x.employee_id === id);
+                $('#emp_id').val(id);
+                $('#emp_phone').val(e.phone);
+                $('#emp_dept').val(e.department);
+                $('#empModal').modal('show');
+            });
+
+            // Save update
+            $('#empSaveBtn').click(() => {
+                const id = $('#emp_id').val();
+                const payload = {
+                    phone: $('#emp_phone').val(),
+                    department: $('#emp_dept').val()
+                };
+                $.ajax({
+                    url: `${API_URL}/employees/${id}`,
+                    method: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload)
+                })
+                    .done(() => {
+                        toastr.success('Updated');
+                        $('#empModal').modal('hide');
+                        loadEmployees();
+                    })
+                    .fail(xhr => toastr.error(xhr.responseJSON?.detail || 'Update failed'));
+            });
+        });
+    </script>
+</body>
+
+</html>

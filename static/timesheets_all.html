@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>All Timesheets – Manager</title>
+    <!-- CSS deps -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css"
+        rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.4/css/sb-admin-2.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+</head>
+
+<body id="page-top">
+    <div id="wrapper">
+        <!-- Sidebar same as above -->
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="manager_dashboard.html">
+                <div class="sidebar-brand-icon"><i class="fas fa-tachometer-alt"></i></div>
+                <div class="sidebar-brand-text mx-3">Manager</div>
+            </a>
+            <hr class="sidebar-divider my-0" />
+            <li class="nav-item"><a class="nav-link" href="manager_dashboard.html"><i
+                        class="fas fa-home"></i><span>Dashboard</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="employees.html"><i
+                        class="fas fa-users"></i><span>Employees</span></a></li>
+            <li class="nav-item active"><a class="nav-link" href="timesheets_all.html"><i
+                        class="fas fa-table"></i><span>All Timesheets</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="payrates.html"><i
+                        class="fas fa-clock"></i><span>Payrates</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="payrolls_all.html"><i
+                        class="fas fa-dollar-sign"></i><span>Payroll Runs</span></a></li>
+            <li class="nav-item">
+                <a class="nav-link" href="deductions.html">
+                    <i class="fas fa-file-invoice-dollar"></i><span>Deductions</span>
+                </a>
+            </li>
+            <hr class="sidebar-divider d-none d-md-block" />
+            <div class="text-center d-none d-md-inline"><button class="rounded-circle border-0"
+                    id="sidebarToggle"></button></div>
+        </ul>
+        <!-- Content -->
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 shadow">
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3"><i
+                            class="fa fa-bars"></i></button>
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item"><button id="logoutBtn" class="btn btn-sm btn-danger"><i
+                                    class="fas fa-sign-out-alt"></i> Logout</button></li>
+                    </ul>
+                </nav>
+                <!-- Table -->
+                <div class="container-fluid">
+                    <h1 class="h3 mb-4 text-gray-800">All Timesheets</h1>
+                    <div class="card shadow mb-4">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="tsAllTable" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Date</th>
+                                            <th>Hours</th>
+                                            <th>OT</th>
+                                            <th>Description</th>
+                                            <th>Status</th>
+                                            <th>Comments</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approve/Reject Modal -->
+    <div class="modal fade" id="tsApproveModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Update Status</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="ts_id" />
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="ts_status" class="form-control">
+                            <option>Approved</option>
+                            <option>Rejected</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Manager Comments</label>
+                        <textarea id="ts_comments" class="form-control"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="tsSaveBtn" class="btn btn-primary">Save</button>
+                    <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS deps -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.4/js/sb-admin-2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <script>
+        const API_URL = 'http://localhost:8001';
+        let empData = [], tsAllData = [];
+
+        $.ajaxPrefilter((opts, _, xhr) => {
+            const tk = localStorage.getItem('access_token');
+            if (!tk) location.href = 'login.html';
+            xhr.setRequestHeader('Authorization', 'Bearer ' + tk);
+        });
+
+        $(function () {
+            $('#logoutBtn').click(() => { localStorage.removeItem('access_token'); location.href = 'login.html'; });
+
+            function fmtDMY(s) { const [y, m, d] = s.split('-'); return `${d}-${m}-${y}`; }
+
+            function loadEmployees() {
+                $.getJSON(`${API_URL}/employees`)
+                    .done(data => { empData = data; loadTimesheets(); })
+                    .fail(() => toastr.error('Failed to load employees'));
+            }
+            function loadTimesheets() {
+                $.getJSON(`${API_URL}/timesheets/all`)
+                    .done(data => {
+                        tsAllData = data;
+                        const tbody = $('#tsAllTable tbody').empty();
+                        data.forEach(r => {
+                            const emp = empData.find(e => e.employee_id === r.employee_id);
+                            const name = emp ? `${emp.first_name} ${emp.last_name}` : r.employee_id;
+                            const actions = r.submission_status === 'Pending'
+                                ? `<button class="btn btn-sm btn-success approveBtn" data-id="${r.timesheet_id}"><i class="fas fa-check"></i></button>
+                   <button class="btn btn-sm btn-danger rejectBtn" data-id="${r.timesheet_id}"><i class="fas fa-times"></i></button>`
+                                : '';
+                            tbody.append(`
+                <tr>
+                  <td>${name}</td>
+                  <td>${fmtDMY(r.date_worked)}</td>
+                  <td>${r.hours_worked}</td>
+                  <td>${r.overtime_hours}</td>
+                  <td>${r.work_description}</td>
+                  <td>${r.submission_status}</td>
+                  <td>${r.manager_comments || ''}</td>
+                  <td>${actions}</td>
+                </tr>
+              `);
+                        });
+                    })
+                    .fail(() => toastr.error('Failed to load timesheets'));
+            }
+            loadEmployees();
+
+            $('#tsAllTable').on('click', '.approveBtn, .rejectBtn', function () {
+                const id = $(this).data('id');
+                $('#ts_id').val(id);
+                $('#ts_status').val($(this).hasClass('approveBtn') ? 'Approved' : 'Rejected');
+                $('#ts_comments').val('');
+                $('#tsApproveModal').modal('show');
+            });
+
+            $('#tsSaveBtn').click(() => {
+                const ts_id = $('#ts_id').val();
+                const payload = {
+                    submission_status: $('#ts_status').val(),
+                    manager_comments: $('#ts_comments').val()
+                };
+                $.ajax({
+                    url: `${API_URL}/timesheets/${ts_id}/approve`,
+                    method: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload)
+                })
+                    .done(() => {
+                        toastr.success('Updated');
+                        $('#tsApproveModal').modal('hide');
+                        loadTimesheets();
+                    })
+                    .fail(xhr => toastr.error(xhr.responseJSON?.detail || 'Update failed'));
+            });
+        });
+    </script>
+</body>
+
+</html>

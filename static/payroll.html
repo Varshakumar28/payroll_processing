@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Payroll History – Employee</title>
+
+    <!-- Bootstrap & SB Admin 2 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css"
+        rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.4/css/sb-admin-2.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+</head>
+
+<body id="page-top">
+    <div id="wrapper">
+        <!-- Sidebar: Employee only -->
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="dashboard.html">
+                <div class="sidebar-brand-icon"><i class="fas fa-user"></i></div>
+                <div class="sidebar-brand-text mx-3">Employee</div>
+            </a>
+            <hr class="sidebar-divider my-0" />
+            <li class="nav-item"><a class="nav-link" href="dashboard.html"><i
+                        class="fas fa-fw fa-home"></i><span>Dashboard</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="timesheet.html"><i
+                        class="fas fa-fw fa-clock"></i><span>Timesheets</span></a></li>
+            <li class="nav-item active"><a class="nav-link" href="payroll.html"><i
+                        class="fas fa-fw fa-dollar-sign"></i><span>Payroll History</span></a></li>
+            <hr class="sidebar-divider d-none d-md-block" />
+            <div class="text-center d-none d-md-inline"><button class="rounded-circle border-0"
+                    id="sidebarToggle"></button></div>
+        </ul>
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 shadow">
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3"><i
+                            class="fa fa-bars"></i></button>
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item"><button id="logoutBtn" class="btn btn-sm btn-danger">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </button></li>
+                    </ul>
+                </nav>
+
+                <!-- Page Content -->
+                <div class="container-fluid">
+                    <h1 class="h3 mb-4 text-gray-800">Payroll History</h1>
+                    <div class="card shadow mb-4">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="payrollTable" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Approved Hours</th>
+                                            <th>Overtime Hours</th>
+                                            <th>Gross Salary</th>
+                                            <th>Deductions</th>
+                                            <th>Net Pay</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- JS deps -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.4/js/sb-admin-2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <script>
+        const API = 'http://localhost:8001';
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            location.href = 'login.html';
+        }
+
+        // Add Authorization header to AJAX
+        $.ajaxPrefilter((opts, _, xhr) => {
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+        });
+
+        // YYYY-MM-DD → DD-MM-YYYY
+        function fmtDMY(s) {
+            const [y, m, d] = s.split('-');
+            return `${d}-${m}-${y}`;
+        }
+
+        $(function () {
+            // Logout
+            $('#logoutBtn').click(() => {
+                localStorage.removeItem('access_token');
+                location.href = 'login.html';
+            });
+
+            // 1) Load payroll runs
+            $.getJSON(`${API}/payrolls?employee=true`)
+                .done(runs => {
+                    const $tb = $('#payrollTable tbody').empty();
+                    runs.forEach(run => {
+                        // 2) Fetch deductions for each run
+                        $.getJSON(`${API}/employee/payrolls/${run.payroll_id}/deductions`)
+                            .done(deds => {
+                                const totalDed = deds.reduce((s, d) => s + d.amount, 0).toFixed(2);
+                                const netPay = (run.gross_salary - totalDed).toFixed(2);
+
+                                $tb.append(`
+                  <tr>
+                    <td>${fmtDMY(run.payroll_date)}</td>
+                    <td>${run.approved_hours}</td>
+                    <td>${run.overtime_hours}</td>
+                    <td>${run.gross_salary.toFixed(2)}</td>
+                    <td>${totalDed}</td>
+                    <td>${netPay}</td>
+                    <td>
+                      <button class="btn btn-sm btn-secondary pdfBtn" data-id="${run.payroll_id}">
+                        <i class="fas fa-file-pdf"></i> PDF
+                      </button>
+                    </td>
+                  </tr>
+                `);
+                            })
+                            .fail(() => {
+                                $tb.append(`
+                  <tr class="table-danger">
+                    <td colspan="7">Unable to load deductions for #${run.payroll_id}</td>
+                  </tr>
+                `);
+                            });
+                    });
+                })
+                .fail(() => toastr.error('Failed to load payroll runs'));
+
+            // 3) Download PDF via fetch (with auth header)
+            $('#payrollTable').on('click', '.pdfBtn', function () {
+                const id = $(this).data('id');
+                fetch(`${API}/employee/payrolls/${id}/pdf`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                })
+                    .then(res => {
+                        if (!res.ok) {
+                            if (res.status === 403) throw "Not authorized";
+                            throw `Error ${res.status}`;
+                        }
+                        return res.blob();
+                    })
+                    .then(blob => {
+                        const url = URL.createObjectURL(blob);
+                        window.open(url, '_blank');
+                        // revoke URL after a bit
+                        setTimeout(() => URL.revokeObjectURL(url), 10000);
+                    })
+                    .catch(err => toastr.error(err));
+            });
+        });
+    </script>
+</body>
+
+</html>

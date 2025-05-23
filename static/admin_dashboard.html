@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin Dashboard – Payroll App</title>
+
+    <!-- Bootstrap & SB Admin 2 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css"
+        rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.4/css/sb-admin-2.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+</head>
+
+<body id="page-top">
+    <div id="wrapper">
+        <!-- Sidebar: only Dashboard + Users -->
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="admin_dashboard.html">
+                <div class="sidebar-brand-icon"><i class="fas fa-user-shield"></i></div>
+                <div class="sidebar-brand-text mx-3">Admin</div>
+            </a>
+            <hr class="sidebar-divider my-0" />
+
+            <li class="nav-item active">
+                <a class="nav-link" href="admin_dashboard.html">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="users.html">
+                    <i class="fas fa-fw fa-user-cog"></i>
+                    <span>Users</span>
+                </a>
+            </li>
+
+            <hr class="sidebar-divider d-none d-md-block" />
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+        </ul>
+        <!-- End Sidebar -->
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                        <i class="fa fa-bars"></i>
+                    </button>
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <button id="logoutBtn" class="btn btn-sm btn-danger">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+                <!-- End Topbar -->
+
+                <!-- Dashboard Content -->
+                <div class="container-fluid">
+                    <h1 class="h3 mb-4 text-gray-800">Admin Dashboard</h1>
+                    <div class="row">
+                        <!-- Total Users -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-secondary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
+                                                Total Users
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalUsers">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Total Timesheets -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Total Timesheets
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalTS">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Pending Timesheets -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-warning shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold  text-warning text-uppercase mb-1">
+                                                Pending Timesheets
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="pendingTS">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-hourglass-half fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Payroll Runs -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-info shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                Payroll Runs
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalPayrolls">0
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.row -->
+                </div>
+                <!-- /.container-fluid -->
+            </div>
+            <!-- End Content -->
+        </div>
+        <!-- End Content Wrapper -->
+    </div>
+    <!-- End Page Wrapper -->
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.4/js/sb-admin-2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+        const API_URL = 'http://localhost:8001';
+
+        // Attach JWT
+        $.ajaxPrefilter((opts, _, xhr) => {
+            const tk = localStorage.getItem('access_token');
+            if (!tk) window.location.href = 'login.html';
+            xhr.setRequestHeader('Authorization', 'Bearer ' + tk);
+        });
+
+        $(function () {
+            $('#logoutBtn').click(() => {
+                localStorage.removeItem('access_token');
+                window.location.href = 'login.html';
+            });
+
+            // Fetch total users
+            $.getJSON(`${API_URL}/users`)
+                .done(u => $('#totalUsers').text(u.length))
+                .fail(() => toastr.error('Failed to load users'));
+
+            // Fetch metrics
+            $.getJSON(`${API_URL}/metrics`)
+                .done(m => {
+                    $('#totalTS').text(m.total_timesheets);
+                    $('#pendingTS').text(m.pending_timesheets);
+                    $('#totalPayrolls').text(m.payroll_runs);
+                })
+                .fail(() => toastr.error('Failed to load metrics'));
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Manage Users – Admin</title>
+
+    <!-- Bootstrap & SB Admin 2 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css"
+        rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.4/css/sb-admin-2.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+</head>
+
+<body id="page-top">
+    <div id="wrapper">
+        <!-- Sidebar: only Dashboard + Users -->
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="admin_dashboard.html">
+                <div class="sidebar-brand-icon"><i class="fas fa-user-shield"></i></div>
+                <div class="sidebar-brand-text mx-3">Admin</div>
+            </a>
+            <hr class="sidebar-divider my-0" />
+
+            <li class="nav-item">
+                <a class="nav-link" href="admin_dashboard.html">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <li class="nav-item active">
+                <a class="nav-link" href="users.html">
+                    <i class="fas fa-fw fa-user-cog"></i>
+                    <span>Users</span>
+                </a>
+            </li>
+
+            <hr class="sidebar-divider d-none d-md-block" />
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+        </ul>
+        <!-- End Sidebar -->
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 shadow">
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                        <i class="fa fa-bars"></i>
+                    </button>
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <button id="logoutBtn" class="btn btn-sm btn-danger">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+                <!-- End Topbar -->
+
+                <!-- Page Content -->
+                <div class="container-fluid">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h1 class="h3 text-gray-800 mb-0">Manage Users</h1>
+                        <div>
+                            <button id="addManagerBtn" class="btn btn-primary btn-sm">
+                                <i class="fas fa-user-plus"></i> Add Manager
+                            </button>
+                            <button id="addAdminBtn" class="btn btn-warning btn-sm">
+                                <i class="fas fa-user-shield"></i> Add Admin
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card shadow mb-4">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="usersTable" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Phone</th>
+                                            <th>Department</th>
+                                            <th>Role</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Create User Modal -->
+                <div class="modal fade" id="createUserModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="createTitle">Create Manager</h5>
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" id="create_role" value="1" />
+                                <div class="form-group">
+                                    <label>First Name</label>
+                                    <input type="text" id="cu_first" class="form-control" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Last Name</label>
+                                    <input type="text" id="cu_last" class="form-control" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Email</label>
+                                    <input type="email" id="cu_email" class="form-control" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Phone</label>
+                                    <input type="text" id="cu_phone" class="form-control" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Department</label>
+                                    <input type="text" id="cu_dept" class="form-control" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Password</label>
+                                    <input type="password" id="cu_pass" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button id="cu_save" class="btn btn-primary">Save</button>
+                                <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Update Role Modal -->
+                <div class="modal fade" id="updateRoleModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Update Role</h5>
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" id="ur_id" />
+                                <div class="form-group">
+                                    <label>Role</label>
+                                    <select id="ur_role" class="form-control">
+                                        <option value="0">Employee</option>
+                                        <option value="1">Manager</option>
+                                        <option value="2">Admin</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button id="ur_save" class="btn btn-primary">Update</button>
+                                <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.4/js/sb-admin-2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+        const API_URL = 'http://localhost:8001';
+        let usersData = [];
+
+        // Attach JWT
+        $.ajaxPrefilter((opts, _, xhr) => {
+            const tk = localStorage.getItem('access_token');
+            if (!tk) location.href = 'login.html';
+            xhr.setRequestHeader('Authorization', 'Bearer ' + tk);
+        });
+
+        $(function () {
+            $('#logoutBtn').click(() => {
+                localStorage.removeItem('access_token');
+                location.href = 'login.html';
+            });
+
+            function loadUsers() {
+                $.getJSON(`${API_URL}/users`)
+                    .done(data => {
+                        usersData = data;
+                        const tbody = $('#usersTable tbody').empty();
+                        data.forEach(u => {
+                            const roleName = ['Employee', 'Manager', 'Admin'][u.role] || u.role;
+                            tbody.append(`
+                <tr>
+                  <td>${u.first_name} ${u.last_name}</td>
+                  <td>${u.email}</td>
+                  <td>${u.phone}</td>
+                  <td>${u.department}</td>
+                  <td>${roleName}</td>
+                  <td>
+                    <button class="btn btn-sm btn-info editRoleBtn" data-id="${u.employee_id}">
+                      <i class="fas fa-user-edit"></i>
+                    </button>
+                  </td>
+                </tr>
+              `);
+                        });
+                    })
+                    .fail(() => toastr.error('Failed to load users'));
+            }
+            loadUsers();
+
+            // Add Manager
+            $('#addManagerBtn').click(() => {
+                $('#create_role').val('1');
+                $('#createTitle').text('Create Manager');
+                $('#createUserModal').modal('show');
+            });
+            // Add Admin
+            $('#addAdminBtn').click(() => {
+                $('#create_role').val('2');
+                $('#createTitle').text('Create Admin');
+                $('#createUserModal').modal('show');
+            });
+
+            // Save new user
+            $('#cu_save').click(() => {
+                const role = $('#create_role').val();
+                const payload = {
+                    first_name: $('#cu_first').val(),
+                    last_name: $('#cu_last').val(),
+                    email: $('#cu_email').val(),
+                    phone: $('#cu_phone').val(),
+                    department: $('#cu_dept').val(),
+                    password: $('#cu_pass').val()
+                };
+                const url = role == '1'
+                    ? `${API_URL}/users/manager`
+                    : `${API_URL}/users/admin`;
+                $.ajax({
+                    url, method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload)
+                })
+                    .done(() => {
+                        toastr.success('User created');
+                        $('#createUserModal').modal('hide');
+                        loadUsers();
+                    })
+                    .fail(xhr => toastr.error(xhr.responseJSON?.detail || 'Creation failed'));
+            });
+
+            // Edit role
+            $('#usersTable').on('click', '.editRoleBtn', function () {
+                const id = $(this).data('id');
+                const u = usersData.find(x => x.employee_id == id);
+                $('#ur_id').val(id);
+                $('#ur_role').val(u.role);
+                $('#updateRoleModal').modal('show');
+            });
+
+            // Save role update
+            $('#ur_save').click(() => {
+                const id = $('#ur_id').val();
+                const role = +$('#ur_role').val();
+                $.ajax({
+                    url: `${API_URL}/users/${id}/role`,
+                    method: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ role })
+                })
+                    .done(() => {
+                        toastr.success('Role updated');
+                        $('#updateRoleModal').modal('hide');
+                        loadUsers();
+                    })
+                    .fail(xhr => toastr.error(xhr.responseJSON?.detail || 'Update failed'));
+            });
+        });
+    </script>
+</body>
+
+</html>

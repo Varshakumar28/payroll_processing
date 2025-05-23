@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Register – Timesheet App</title>
+
+  <!-- Bootstrap 4.6 & SB Admin 2 CSS -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link
+    href="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.4/css/sb-admin-2.min.css"
+    rel="stylesheet"
+  />
+  <!-- FontAwesome -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    rel="stylesheet"
+  />
+  <!-- Toastr -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"
+    rel="stylesheet"
+  />
+</head>
+
+<body class="bg-gradient-primary">
+
+  <div class="container">
+
+    <!-- Outer Row -->
+    <div class="row justify-content-center">
+
+      <div class="col-xl-6 col-lg-7 col-md-9">
+
+        <div class="card o-hidden border-0 shadow-lg my-5">
+          <div class="card-body p-5">
+            <div class="text-center">
+              <h1 class="h4 text-gray-900 mb-4">Create an Account</h1>
+            </div>
+            <form id="registerForm" class="user">
+              <div class="form-group">
+                <input type="text" class="form-control form-control-user"
+                  id="first_name" name="first_name" placeholder="First Name" required>
+              </div>
+              <div class="form-group">
+                <input type="text" class="form-control form-control-user"
+                  id="last_name" name="last_name" placeholder="Last Name" required>
+              </div>
+              <div class="form-group">
+                <input type="email" class="form-control form-control-user"
+                  id="email" name="email" placeholder="Email Address" required>
+              </div>
+              <div class="form-group">
+                <input type="text" class="form-control form-control-user"
+                  id="phone" name="phone" placeholder="Phone Number" required>
+              </div>
+              <div class="form-group">
+                <input type="text" class="form-control form-control-user"
+                  id="department" name="department" placeholder="Department" required>
+              </div>
+              <div class="form-group">
+                <input type="password" class="form-control form-control-user"
+                  id="password" name="password" placeholder="Password" required>
+              </div>
+              <button type="submit" class="btn btn-primary btn-user btn-block">
+                Register Account
+              </button>
+            </form>
+            <hr>
+            <div class="text-center">
+              <a class="small" href="login.html">Already have an account? Login!</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- JS -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.bundle.min.js"
+  ></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/startbootstrap-sb-admin-2@4.1.4/js/sb-admin-2.min.js"
+  ></script>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"
+  ></script>
+
+  <script>
+    const API_URL = 'http://localhost:8001';
+
+    $('#registerForm').submit(function (e) {
+      e.preventDefault();
+      const payload = {
+        first_name: $('#first_name').val(),
+        last_name: $('#last_name').val(),
+        email: $('#email').val(),
+        phone: $('#phone').val(),
+        department: $('#department').val(),
+        password: $('#password').val(),
+      };
+      $.ajax({
+        url: `${API_URL}/register`,
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(payload),
+        success: function (data) {
+          localStorage.setItem('access_token', data.access_token);
+          toastr.success('Registered successfully!');
+          window.location.href = 'dashboard.html';
+        },
+        error: function (xhr) {
+          toastr.error(xhr.responseJSON?.detail || 'Registration failed');
+        },
+      });
+    });
+  </script>
+</body>
+
+</html>
